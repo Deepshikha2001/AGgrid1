@@ -1,0 +1,128 @@
+﻿@model AGgrid1.Models.Product1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>Ag-Grid Sample Project</title>
+    
+</head>
+<body>
+    <form id="dataForm" asp-controller="Home" asp-action="Create" method="POST">
+
+        <input asp-for="Name" type="text" id="name" placeholder="Name">
+        <input asp-for="Description" type="text" id="description" placeholder="Description">
+        <input asp-for="Category" type="text" id="category" placeholder="Category">
+        <button type="submit" id="Create">Add to Grid</button>
+
+    </form>
+
+    <div id="myGrid" class="ag-theme-quartz" style="height: 500px"></div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.1/dist/ag-grid-community.min.js"></script>
+    <script>
+
+
+
+        const gridOptions = {
+            defaultColDef: {
+                editable: true,
+                filter: true,
+
+            },
+            rowData: [],
+            columnDefs: [
+                { field: 'id' },
+                { field: 'name' },
+                { field: 'description' },
+                { field: 'category' },
+                {
+                    headerName: 'Actions1',
+                    cellRenderer: function (params) {
+                        const id = params.data.id;
+                        return '<button class="btn btn-danger" onclick="RemoveRow(' + id + ')">Delete</button>';
+                    }
+                },
+            ],
+            onCellValueChanged: function (params) {
+                fetch('Home/Edit', {
+                    method:"POST",
+                    headers: { 'Content-Type':'application/json'},
+                    body: JSON.stringify(params.data)
+                })
+            }
+        };
+
+        const gridApi = agGrid.createGrid(document.querySelector('#myGrid'), gridOptions);
+
+      
+
+        fetch('/Home/Prod')
+            .then(response => response.json())
+            .then((data) => gridApi.setGridOption('rowData', data));
+
+       
+        function RemoveRow(id) {
+            fetch('/Home/Destroy/' + id, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => gridApi.setRowData(data));
+        }
+      
+    </script>
+
+
+
+
+</body>
+</html>
+<style>
+
+    .ag-theme-quartz {
+        --ag-foreground-color: rgb(126, 46, 132);
+        --ag-background-color: rgb(249, 245, 227);
+        --ag-header-foreground-color: rgb(204, 245, 172);
+        --ag-header-background-color: darkblue;
+        --ag-odd-row-background-color: rgb(0, 0, 0, 0.03);
+        --ag-header-column-resize-handle-color: rgb(126, 46, 132);
+        --ag-font-size: 17px;
+        --ag-font-family: monospace;
+    }
+
+    .container {
+        width: 900px;
+    }
+    #dataForm {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border-radius: 8px;
+    }
+
+        #dataForm input[type="text"] {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #dataForm button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+    #Create {
+        background-color: darkblue;
+        color: white;
+        margin-bottom: 10px;
+
+    }
+
+   
+
+</style>
